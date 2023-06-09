@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="node_modules/@chrisoakman/chessboardjs/dist/chessboard-1.0.0.css">
+    <script src="node_modules/jquery/dist/jquery.js"></script>
+    <script src="node_modules/@chrisoakman/chessboardjs/dist/chessboard-1.0.0.js"></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="Board" ></div>
+  </body>
+    <script>
+        const config = {
+            position: 'start'
+        }
+
+        const board = Chessboard('Board', config)
+    </script>
+</html>
