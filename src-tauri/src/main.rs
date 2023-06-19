@@ -3,19 +3,23 @@
 
 use std::str::FromStr;
 
-use chess::{Board, MoveGen, Game, Color, Square, ChessMove};
+use chess::{Board, ChessMove, Color, Game, MoveGen, Piece, Square, PROMOTION_PIECES};
 
 static mut GAME: Option<Game> = None;
-
 
 fn main() {
     unsafe {
         GAME = Some(Game::new());
 
-      tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![is_over, get_turn, do_a_move, get_possible_moves])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        tauri::Builder::default()
+            .invoke_handler(tauri::generate_handler![
+                is_over,
+                get_turn,
+                do_a_move,
+                get_possible_moves
+            ])
+            .run(tauri::generate_context!())
+            .expect("error while running tauri application");
     }
 }
 
@@ -23,7 +27,7 @@ fn main() {
 unsafe fn is_over() -> bool {
     return match &GAME {
         Some(game) => game.result().is_some(),
-        None => false
+        None => false,
     };
 }
 
