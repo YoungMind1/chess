@@ -36,35 +36,43 @@
             $square.css('background', background)
         }
 
-        function onDragStart (source, piece) {
-            console.log("onDragStart ");
-            console.log("source   " + source)
-            console.log("piece   " +piece)
+        async function onDragStart (source, piece) {
             // do not pick up pieces if the game is over
-            /* if (game.game_over()) return false */
-            /**/
-            /* // or if it's not that side's turn */
-            /* if ((game.turn() === 'w' && piece.search(/^b/) !== -1) || */
-            /*     (game.turn() === 'b' && piece.search(/^w/) !== -1)) { */
-            /*     return false */
-            /* } */
+            if (
+                await invoke('is_over')
+                    .then((response) => response) === true
+            ) {
+              return false;
+            }
+
+            // or if it's not that side's turn */
+          if ((await invoke('get_turn').then((response) => response) === 'w' && piece.search(/^b/) !== -1) ||
+                (await invoke('get_turn').then((response) => response) === 'b' && piece.search(/^w/) !== -1)) {
+                return false;
+            }
         }
 
-        function onDrop (source, target) {
+        async function onDrop (source, target) {
             console.log("onDrop ");
             console.log("source   " + source)
             console.log("target   " +target)
             removeGreySquares()
 
             // see if the move is legal
-            /* var move = game.move({ */
-            /*     from: source, */
-            /*     to: target, */
-            /*     promotion: 'q' // NOTE: always promote to a queen for example simplicity */
-            /* }) */
+              let move = await invoke('do_a_move', {
+                source: source,
+                destination: target,
+                promotion: 'q' // NOTE: always promote to a queen for example simplicity
+            }).then((response) => response);
+
+            console.log("+++++++++++++++++++++++++++++++++++");
+            console.log(move)
 
             // illegal move
-            if (move === null) return 'snapback'
+            if (move === false) {
+                console.log("yeap illegal")
+                return 'snapback';
+            }
         }
 
         function onMouseoverSquare (square, piece) {
@@ -77,16 +85,16 @@
             /*     verbose: true */
             /* }) */
 
-            // exit if there are no moves available for this square
-            if (moves.length === 0) return
-
-            // highlight the square they moused over
-            greySquare(square)
-
-            // highlight the possible squares for this piece
-            for (var i = 0; i < moves.length; i++) {
-                greySquare(moves[i].to)
-            }
+            /* // exit if there are no moves available for this square */
+            /* if (moves.length === 0) return */
+            /**/
+            /* // highlight the square they moused over */
+            /* greySquare(square) */
+            /**/
+            /* // highlight the possible squares for this piece */
+            /* for (var i = 0; i < moves.length; i++) { */
+            /*     greySquare(moves[i].to) */
+            /* } */
         }
 
         function onMouseoutSquare (square, piece) {
@@ -96,8 +104,9 @@
             removeGreySquares()
         }
 
-        function onSnapEnd () {
-            //
+        async function onSnapEnd () {
+            let test = await invoke('fen').then((response) => response);
+            board.position(test);
         }
 
         const config = {
