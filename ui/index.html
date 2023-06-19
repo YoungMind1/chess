@@ -75,32 +75,31 @@
             }
         }
 
-        function onMouseoverSquare (square, piece) {
+        async function onMouseoverSquare (square, piece) {
             console.log("onMouseoverSquare");
             console.log("square   " + square)
             console.log("piece   " +piece)
             // get list of possible moves for this square
-            /* var moves = game.moves({ */
-            /*     square: square, */
-            /*     verbose: true */
-            /* }) */
+            let moves = await invoke('get_possible_moves', {
+                'square': square
+            }).then((response) => response);
 
-            /* // exit if there are no moves available for this square */
-            /* if (moves.length === 0) return */
-            /**/
-            /* // highlight the square they moused over */
-            /* greySquare(square) */
-            /**/
-            /* // highlight the possible squares for this piece */
-            /* for (var i = 0; i < moves.length; i++) { */
-            /*     greySquare(moves[i].to) */
-            /* } */
+            console.log("&77777777777777777&&&&&777777777777777&&&&777777777")
+            console.log(moves);
+
+            // exit if there are no moves available for this square
+            if (moves.length === 0) return
+
+            // highlight the square they moused over
+            greySquare(square)
+
+            // highlight the possible squares for this piece
+            for (var i = 0; i < moves.length; i++) {
+                greySquare(moves[i])
+            }
         }
 
         function onMouseoutSquare (square, piece) {
-            console.log("onMouseoutSquare ");
-            console.log("square   " + square)
-            console.log("piece   " +piece)
             removeGreySquares()
         }
 

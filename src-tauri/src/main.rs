@@ -63,7 +63,7 @@ unsafe fn get_possible_moves(square: &str) -> Vec<String> {
 
     for possible_move in MoveGen::new_legal(&GAME.clone().unwrap().current_position()) {
         if possible_move.get_source() == square {
-            possible_moves.push(possible_move.to_string());
+            possible_moves.push(possible_move.get_dest().to_string());
         }
     }
 
