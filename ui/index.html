@@ -73,6 +73,8 @@
                 console.log("yeap illegal")
                 return 'snapback';
             }
+
+            board.position(await invoke('ai_move').then((response) => response));
         }
 
         async function onMouseoverSquare (square, piece) {
