@@ -34,7 +34,7 @@ unsafe fn ai_move() -> String {
     let mut new_game = GAME.clone().unwrap();
 
     new_game.make_move(
-        minimax(&new_game.current_position(), true, 5, i16::MIN, i16::MAX)
+        minimax(&new_game.current_position(), true, 0, i16::MIN, i16::MAX)
             .0
             .unwrap(),
     );
@@ -67,7 +67,7 @@ fn minimax(
         );
     }
 
-    if depth == 0 {
+    if depth == 5 {
         return (None, evaluate(board));
     }
 
@@ -81,15 +81,15 @@ fn minimax(
         for m in moves {
             let new_board = board.make_move_new(m);
 
-            let stuff = minimax(&new_board, false, depth - 1, alpha, beta);
+            let stuff = minimax(&new_board, false, depth + 1, alpha, beta);
 
             if stuff.1 > alpha {
                 alpha = stuff.1;
-                best_move = stuff.0;
+                best_move = Some(m);
             }
 
-            if alpha > beta {
-                return (best_move, alpha - depth as i16);
+            if alpha >= beta {
+                return (Some(m), alpha - depth as i16);
             }
         }
 
@@ -102,15 +102,15 @@ fn minimax(
         for m in moves {
             let new_board = board.make_move_new(m);
 
-            let stuff = minimax(&new_board, true, depth - 1, alpha, beta);
+            let stuff = minimax(&new_board, true, depth + 1, alpha, beta);
 
             if stuff.1 < beta {
                 beta = stuff.1;
-                best_move = stuff.0;
+                best_move = Some(m);
             }
 
-            if alpha > beta {
-                return (best_move, beta + depth as i16);
+            if alpha >= beta {
+                return (Some(m), beta + depth as i16);
             }
         }
 
