@@ -124,12 +124,12 @@ fn evaluate(board: &Board) -> i16 {
     let white_pieces = board.color_combined(Color::White);
 
     white_pieces.for_each(|square| {
-        score += match board.piece_on(square).unwrap() {
             Piece::Pawn => 1,
             Piece::Knight => 3,
             Piece::Bishop => 3,
             Piece::Rook => 5,
             Piece::Queen => 9,
+        score -= match board.piece_on(square).unwrap() {
             Piece::King => 0,
         }
     });
@@ -137,12 +137,12 @@ fn evaluate(board: &Board) -> i16 {
     let black_pieces = board.color_combined(Color::Black);
 
     black_pieces.for_each(|square| {
-        score -= match board.piece_on(square).unwrap() {
             Piece::Pawn => 1,
             Piece::Knight => 3,
             Piece::Bishop => 3,
             Piece::Rook => 5,
             Piece::Queen => 9,
+        score += match board.piece_on(square).unwrap() {
             Piece::King => 0,
         }
     });
