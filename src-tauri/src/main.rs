@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::str::FromStr;
+use std::{str::FromStr, collections::HashMap, cmp::Ordering};
 
 use chess::{Board, BoardStatus, ChessMove, Color, Game, MoveGen, Piece, Square};
 
@@ -33,6 +33,7 @@ fn main() {
 unsafe fn ai_move() -> String {
     let mut new_game = GAME.clone().unwrap();
 
+    // let mut cache: HashMap<u64, i16> = HashMap::new();
     new_game.make_move(
         minimax(&new_game.current_position(), true, 0, i16::MIN, i16::MAX)
             .0
@@ -49,6 +50,7 @@ fn minimax(
     depth: u8,
     mut alpha: i16,
     mut beta: i16,
+    // cache: &mut HashMap<u64, i16>,
 ) -> (Option<ChessMove>, i16) {
     if board.status() == BoardStatus::Stalemate || board.status() == BoardStatus::Checkmate {
         let game: Game = Game::new_with_board(board.clone());
@@ -72,19 +74,59 @@ fn minimax(
     }
 
     let mut best_move: Option<ChessMove> = None;
-    let mut move_generator = MoveGen::new_legal(&board);
+    let move_generator = MoveGen::new_legal(&board);
     if is_maximizer {
         let moves = move_generator.filter(|m| {
             return board.color_on(m.get_source()).unwrap() == Color::Black;
         });
 
-        for m in moves {
+
+        let mut sorted_moves = moves.collect::<Vec<ChessMove>>();
+        sorted_moves.sort_by(|a, b| {
+            if board.piece_on(a.get_dest()).is_none() && board.piece_on(b.get_dest()).is_none() {
+                return Ordering::Equal;
+            }
+            else if board.piece_on(a.get_dest()).is_some() && board.piece_on(b.get_dest()).is_none() {
+                return Ordering::Less;
+            }
+            else if board.piece_on(b.get_dest()).is_some() && board.piece_on(a.get_dest()).is_none() {
+                return Ordering::Greater;
+            }
+
+            let mut a_score: i16 = 0;
+            let mut b_score: i16 = 0;
+            a_score += match board.piece_on(a.get_dest()).unwrap() {
+                Piece::Pawn => 1,
+                Piece::Knight => 3,
+                Piece::Bishop => 3,
+                Piece::Rook => 5,
+                Piece::Queen => 9,
+                Piece::King => 20,
+            };
+            b_score += match board.piece_on(b.get_dest()).unwrap() {
+                Piece::Pawn => 1,
+                Piece::Knight => 3,
+                Piece::Bishop => 3,
+                Piece::Rook => 5,
+                Piece::Queen => 9,
+                Piece::King => 20,
+            };
+
+            return a_score.cmp(&b_score);
+        });
+
+        for m in sorted_moves {
             let new_board = board.make_move_new(m);
+            // let stuff: i16;
+            // if cache.get(&new_board.get_hash()).is_some() {
+            //     stuff = cache.get(&new_board.get_hash()).unwrap().to_owned();
+            // } else {
+            //     cache.insert(new_board.get_hash(), stuff);
+            // }
+                let stuff = minimax(&new_board, false, depth + 1, alpha, beta).1;
 
-            let stuff = minimax(&new_board, false, depth + 1, alpha, beta);
-
-            if stuff.1 > alpha {
-                alpha = stuff.1;
+            if stuff > alpha {
+                alpha = stuff;
                 best_move = Some(m);
             }
 
@@ -98,14 +140,53 @@ fn minimax(
         let moves = move_generator.filter(|m| {
             return board.color_on(m.get_source()).unwrap() == Color::White;
         });
+        
+        let mut sorted_moves = moves.collect::<Vec<ChessMove>>();
+        sorted_moves.sort_by(|a, b| {
+            if board.piece_on(a.get_dest()).is_none() && board.piece_on(b.get_dest()).is_none() {
+                return Ordering::Equal;
+            }
+            else if board.piece_on(a.get_dest()).is_some() && board.piece_on(b.get_dest()).is_none() {
+                return Ordering::Less;
+            }
+            else if board.piece_on(b.get_dest()).is_some() && board.piece_on(a.get_dest()).is_none() {
+                return Ordering::Greater;
+            }
 
-        for m in moves {
+            let mut a_score: i16 = 0;
+            let mut b_score: i16 = 0;
+            a_score += match board.piece_on(a.get_dest()).unwrap() {
+                Piece::Pawn => 1,
+                Piece::Knight => 3,
+                Piece::Bishop => 3,
+                Piece::Rook => 5,
+                Piece::Queen => 9,
+                Piece::King => 20,
+            };
+            b_score += match board.piece_on(b.get_dest()).unwrap() {
+                Piece::Pawn => 1,
+                Piece::Knight => 3,
+                Piece::Bishop => 3,
+                Piece::Rook => 5,
+                Piece::Queen => 9,
+                Piece::King => 20,
+            };
+
+            return a_score.cmp(&b_score);
+        });
+
+        for m in sorted_moves {
             let new_board = board.make_move_new(m);
+            // let stuff: i16;
+            // if cache.get(&new_board.get_hash()).is_some() {
+            //     stuff = cache.get(&new_board.get_hash()).unwrap().to_owned();
+            // } else {
+            //     cache.insert(new_board.get_hash(), stuff);
+            // }
+                let stuff = minimax(&new_board, true, depth + 1, alpha, beta).1;
 
-            let stuff = minimax(&new_board, true, depth + 1, alpha, beta);
-
-            if stuff.1 < beta {
-                beta = stuff.1;
+            if stuff < beta {
+                beta = stuff;
                 best_move = Some(m);
             }
 
